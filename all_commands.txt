@@ -1,0 +1,42 @@
+[isa@isa isa]$ ./client register user1 pwd1
+SUCCESS: registered user user1
+[isa@isa isa]$ ./client login user1 pwd
+ERROR: incorrect password
+[isa@isa isa]$ ./client login user1 pwd1
+SUCCESS: user logged in
+[isa@isa isa]$ ./client logout
+SUCCESS: logged out
+[isa@isa isa]$ ./client register user2 pwd2
+SUCCESS: registered user user2
+[isa@isa isa]$ ./client login user2 pwd2
+SUCCESS: user logged in
+[isa@isa isa]$ ./client list
+SUCCESS:
+[isa@isa isa]$ ./client fetch
+fetch <id>
+[isa@isa isa]$ ./client fetch 1
+ERROR: message id not found
+[isa@isa isa]$ ./client send wrong_user test msg
+ERROR: unknown recipient
+[isa@isa isa]$ ./client send user1 an_subject
+send <recipient> <subject> <body>
+[isa@isa isa]$ ./client send user1 an_subject a_message_body
+SUCCESS: message sent
+[isa@isa isa]$ ./client list
+SUCCESS:
+[isa@isa isa]$ ./client logout
+SUCCESS: logged out
+[isa@isa isa]$ ./client login user1 pwd1
+SUCCESS: user logged in
+[isa@isa isa]$ ./client list
+SUCCESS:
+1:
+  From: user2
+  Subject: an_subject
+[isa@isa isa]$ ./client fetch 1
+SUCCESS:
+
+From: user2
+Subject: an_subject
+
+[isa@isa isa]$
