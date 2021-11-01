@@ -19,7 +19,7 @@ class Params
 {
 public:
     std::string address = "127.0.0.1";
-    unsigned short port = 32323;
+    int port = 32323;
     Command command;
     std::string command_str;
     std::vector<std::string> args;
