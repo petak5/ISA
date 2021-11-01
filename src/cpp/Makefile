@@ -7,11 +7,14 @@ CFLAGS=-g -std=c++17 -pedantic -Wall -Wextra -O2
 
 all: main
 
-main: main.o
-	$(CC) $(CFLAGS) main.o -o main
+main: main.o params.o
+	$(CC) $(CFLAGS) main.o params.o -o main
 
-main.o: main.cpp
+main.o: main.cpp main.h
 	$(CC) $(CFLAGS) -c main.cpp -o main.o
+
+params.o: params.cpp params.h
+	$(CC) $(CFLAGS) -c params.cpp -o params.o
 
 run: main
 	./main
