@@ -9,5 +9,6 @@
 
 void saveToken(std::string t);
 std::string loadToken();
+void deleteToken();
 
 #endif  // __TOOLS_H__

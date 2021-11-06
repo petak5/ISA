@@ -25,13 +25,16 @@ void Response::parse(Command command, std::string msg)
     }
     else
     {
-        perror("ERROR: Unexpected response from server.");
+        std::cerr << "ERROR: Unexpected response from server.";
         exit(1);
     }
 
     if (!success || command == Command::Register || command == Command::Logout || command == Command::Send)
     {
         message = msg.substr(1, msg.length() - 2) + '\n';
+
+        if (command == Command::Logout)
+            deleteToken();
     }
     else if (command == Command::Login)
     {
@@ -65,7 +68,7 @@ void Response::parse(Command command, std::string msg)
     }
     else
     {
-        perror("ERROR: Unexpected response from server #2.");
+        std::cerr << "ERROR: Unexpected response from server #2.";
         exit(1);
     }
 }

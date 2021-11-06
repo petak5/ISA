@@ -69,7 +69,7 @@ void Params::parse(int argc, char *argv[])
                         command = Command::Send;
                     else
                     {
-                        std::cout << "Invalid command '" << argv[i] << "'\n";
+                        std::cout << "unknown command\n";
                         exit(1);
                     }
 

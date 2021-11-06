@@ -14,6 +14,7 @@
 #include <string.h>
 
 #include "main.h"
+#include "base64.h"
 #include "tools.h"
 
 #define BUFF_SIZE 1024
@@ -51,7 +52,7 @@ int main(int argc, char *argv[])
     hints.ai_socktype = SOCK_STREAM;
 
     if ((rv = getaddrinfo(params.address.c_str(), params.port.c_str(), &hints, &servinfo)) != 0) {
-        fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(rv));
+        std::cerr << "getaddrinfo: " + std::string(gai_strerror(rv)) + '\n';
         return 1;
     }
 
@@ -73,8 +74,8 @@ int main(int argc, char *argv[])
     }
 
     if (p == NULL) {
-        fprintf(stderr, "client: failed to connect\n");
-        return 2;
+        std::cerr << "client: failed to connect\n";
+        return 1;
     }
 
     inet_ntop(p->ai_family, get_in_addr((struct sockaddr *)p->ai_addr), s, sizeof(s));
@@ -133,31 +134,33 @@ std::string createMessage(Params params)
         case Command::Register:
             if (params.args.size() != 2)
             {
-                perror("ERROR: Invalid arguments count for command register.");
+                std::cerr << "ERROR: Invalid arguments count for command register.";
                 exit(1);
             }
 
-            // TODO: convert password to base64
-
-            result = result + "(register \"" + params.args[0]  + "\" \"" + params.args[1] + "\")";
+            result = result + "(register \"" + params.args[0]  + "\" \"" + base64_encode(params.args[1]) + "\")";
             break;
 
         case Command::Login:
             if (params.args.size() != 2)
             {
-                perror("ERROR: Invalid arguments count for command login.");
+                std::cerr << "ERROR: Invalid arguments count for command login.";
                 exit(1);
             }
 
-            // TODO: convert password to base64
-
-            result = result + "(login \"" + params.args[0]  + "\" \"" + params.args[1] + "\")";
+            result = result + "(login \"" + params.args[0]  + "\" \"" + base64_encode(params.args[1]) + "\")";
             break;
 
         case Command::Logout:
             if (params.args.size() != 0)
             {
-                perror("ERROR: Invalid arguments count for command logout.");
+                std::cerr << "ERROR: Invalid arguments count for command logout.";
+                exit(1);
+            }
+
+            if (token.empty())
+            {
+                std::cerr << "Not logged in\n";
                 exit(1);
             }
 
@@ -167,7 +170,13 @@ std::string createMessage(Params params)
         case Command::List:
             if (params.args.size() != 0)
             {
-                perror("ERROR: Invalid arguments count for command list.");
+                std::cerr << "ERROR: Invalid arguments count for command list.";
+                exit(1);
+            }
+
+            if (token.empty())
+            {
+                std::cerr << "Not logged in\n";
                 exit(1);
             }
 
@@ -177,7 +186,13 @@ std::string createMessage(Params params)
         case Command::Fetch:
             if (params.args.size() != 1)
             {
-                perror("ERROR: Invalid arguments count for command fetch.");
+                std::cerr << "ERROR: Invalid arguments count for command fetch.";
+                exit(1);
+            }
+
+            if (token.empty())
+            {
+                std::cerr << "Not logged in\n";
                 exit(1);
             }
 
@@ -187,7 +202,13 @@ std::string createMessage(Params params)
         case Command::Send:
             if (params.args.size() != 3)
             {
-                perror("ERROR: Invalid arguments count for command send.");
+                std::cerr << "ERROR: Invalid arguments count for command send.";
+                exit(1);
+            }
+
+            if (token.empty())
+            {
+                std::cerr << "Not logged in\n";
                 exit(1);
             }
 

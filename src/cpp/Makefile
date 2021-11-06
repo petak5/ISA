@@ -5,7 +5,7 @@
 CC=g++
 CFLAGS=-g -std=c++20 -pedantic -Wall -Wextra -O2
 
-MODULES=main.o params.o response.o tools.o
+MODULES=main.o params.o response.o tools.o base64.o
 
 all: main
 
