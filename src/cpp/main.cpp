@@ -32,16 +32,15 @@ int main(int argc, char *argv[])
     auto params = Params(argc, argv);
 
     /*
-    std::cout << "Address: " << params.address << std::endl;
-    std::cout << "Port: " << params.port << std::endl;
-    std::cout << "Command: " << params.command_str << std::endl;
-    if (params.args.size()) std::cout << "Args: " << std::endl;
+    std::cout << "Address: " << params.address << '\n';
+    std::cout << "Port: " << params.port << '\n';
+    std::cout << "Command: " << params.command_str << '\n';
+    if (params.args.size()) std::cout << "Args: \n";
     for (auto a : params.args)
-        std::cout << "    " << a << std::endl;
+        std::cout << "    " << a << '\n';
     */
 
-    int sockfd, numbytes;
-    char buf[BUFF_SIZE];
+    int sockfd;
     struct addrinfo hints, *servinfo, *p;
     int rv;
     char s[INET6_ADDRSTRLEN];
@@ -77,8 +76,7 @@ int main(int argc, char *argv[])
         return 2;
     }
 
-    inet_ntop(p->ai_family, get_in_addr((struct sockaddr *)p->ai_addr),
-            s, sizeof(s));
+    inet_ntop(p->ai_family, get_in_addr((struct sockaddr *)p->ai_addr), s, sizeof(s));
     printf("client: connecting to %s\n", s);
 
     freeaddrinfo(servinfo); // all done with this structure
@@ -86,14 +84,12 @@ int main(int argc, char *argv[])
     // Send message
     sendMessage(sockfd, createMessage(params));
 
-    if ((numbytes = recv(sockfd, buf, BUFF_SIZE - 1, 0)) == -1) {
-        perror("recv");
-        exit(1);
-    }
+    // Receive response
+    auto msg = receiveMessage(sockfd);
 
-    buf[numbytes] = '\0';
+    std::cout << "client: received '" + msg + "'\n";
 
-    printf("client: received '%s'\n",buf);
+    auto response = Response(msg);
 
     close(sockfd);
 
@@ -106,6 +102,21 @@ void sendMessage(int socket, std::string message)
         perror("ERROR: failed to send message.");
         exit(1);
     }
+}
+
+std::string receiveMessage(int socket)
+{
+    int numbytes;
+    char buffer[BUFF_SIZE];
+
+    if ((numbytes = recv(socket, buffer, BUFF_SIZE - 1, 0)) == -1) {
+        perror("recv");
+        exit(1);
+    }
+
+    buffer[numbytes] = '\0';
+
+    return std::string(buffer);
 }
 
 std::string createMessage(Params params)
@@ -191,4 +202,9 @@ std::string createMessage(Params params)
     }
 
     return result;
+}
+
+void printResponse(Response response)
+{
+
 }

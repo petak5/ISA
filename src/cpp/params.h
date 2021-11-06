@@ -2,6 +2,9 @@
 // Peter Urgoš (xurgos00)
 // 11/2021
 
+#ifndef __PARAMS_H__
+#define __PARAMS_H__
+
 #include <string>
 #include <vector>
 
@@ -32,3 +35,5 @@ private:
     void parse(int argc, char *argv[]);
     std::string command_to_string(Command command);
 };
+
+#endif  // __PARAMS_H__

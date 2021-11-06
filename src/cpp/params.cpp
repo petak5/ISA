@@ -35,7 +35,7 @@ void Params::parse(int argc, char *argv[])
     		{
                 if (addressSet)
                 {
-                    std::cout << "Address already set" << std::endl;
+                    std::cout << "Address already set\n";
                     exit(1);
                 }
 
@@ -45,7 +45,7 @@ void Params::parse(int argc, char *argv[])
 			{
                 if (portSet)
                 {
-                    std::cout << "Port already set" << std::endl;
+                    std::cout << "Port already set\n";
                     exit(1);
                 }
 
@@ -69,7 +69,7 @@ void Params::parse(int argc, char *argv[])
                         command = Command::Send;
                     else
                     {
-                        std::cout << "Invalid command '" << argv[i] << "'" << std::endl;
+                        std::cout << "Invalid command '" << argv[i] << "'\n";
                         exit(1);
                     }
 
@@ -99,12 +99,12 @@ void Params::parse(int argc, char *argv[])
 
     if (state == State::Address)
     {
-        std::cout << "No address provided" << std::endl;
+        std::cout << "No address provided\n";
         exit(1);
     }
     else if (state == State::Port)
     {
-        std::cout << "No port provided" << std::endl;
+        std::cout << "No port provided\n";
         exit(1);
     }
 }
