@@ -19,9 +19,11 @@ class Params
 {
 public:
     std::string address = "127.0.0.1";
-    int port = 32323;
+    std::string port = "32323";
     Command command;
+    // Command's string representation
     std::string command_str;
+    // Command arguments
     std::vector<std::string> args;
 
     Params(int argc, char *argv[]);

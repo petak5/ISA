@@ -38,7 +38,7 @@ void Params::parse(int argc, char *argv[])
                     std::cout << "Address already set" << std::endl;
                     exit(1);
                 }
-				
+
                 state = State::Address;
 	    	}
 			else if (argv[i] == std::string("-p"))
@@ -90,24 +90,8 @@ void Params::parse(int argc, char *argv[])
 		}
 		else if (state == State::Port)
 		{
-            try
-            {
-                port = std::stoi(argv[i]);
+            port = argv[i];
 
-                if (std::to_string(port) != argv[i])
-                {
-                    std::cout << "Invalid port. Must contain only digits." << std::endl;
-                    exit(1);
-                }
-            }
-            catch(const std::exception& e)
-            {
-                std::cout << "Invalid port. Failed to convert to number." << std::endl;
-                exit(1);
-            }
-
-            // TODO: check for max size of TCP port (should be 16-bit unsigned number)
-            
             state = State::Start;
             portSet = true;
 		}
