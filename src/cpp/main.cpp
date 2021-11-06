@@ -14,6 +14,7 @@
 #include <string.h>
 
 #include "main.h"
+#include "tools.h"
 
 #define BUFF_SIZE 1024
 
@@ -89,7 +90,9 @@ int main(int argc, char *argv[])
 
     std::cout << "client: received '" + msg + "'\n";
 
-    auto response = Response(msg);
+    auto response = Response(params.command, msg);
+    // Print response
+    printResponse(response);
 
     close(sockfd);
 
@@ -123,8 +126,7 @@ std::string createMessage(Params params)
 {
     std::string result = "";
 
-    // TODO: token
-    std::string token = "a random token";
+    std::string token = loadToken();
 
     switch (params.command)
     {
@@ -159,8 +161,6 @@ std::string createMessage(Params params)
                 exit(1);
             }
 
-            // TODO: token
-
             result = result + "(logout \"" + token + "\")";
             break;
 
@@ -170,8 +170,6 @@ std::string createMessage(Params params)
                 perror("ERROR: Invalid arguments count for command list.");
                 exit(1);
             }
-
-            // TODO: token
 
             result = result + "(list \"" + token + "\")";
             break;
@@ -183,8 +181,6 @@ std::string createMessage(Params params)
                 exit(1);
             }
 
-            // TODO: token
-
             result = result + "(fetch \"" + token + "\" " + params.args[0] + ")";
             break;
 
@@ -195,8 +191,6 @@ std::string createMessage(Params params)
                 exit(1);
             }
 
-            // TODO: token
-
             result = result + "(send \"" + token + "\" \"" + params.args[0] + "\" \"" + params.args[1] + "\" \"" + params.args[2] + "\")";
             break;
     }
@@ -206,5 +200,5 @@ std::string createMessage(Params params)
 
 void printResponse(Response response)
 {
-
+    std::cout << (response.success ? "SUCCESS: " : "ERROR: ") << response.message;
 }

@@ -3,9 +3,9 @@
 # 11/2021
 
 CC=g++
-CFLAGS=-g -std=c++17 -pedantic -Wall -Wextra -O2
+CFLAGS=-g -std=c++20 -pedantic -Wall -Wextra -O2
 
-MODULES=main.o params.o response.o
+MODULES=main.o params.o response.o tools.o
 
 all: main
 
