@@ -2,6 +2,12 @@
 -- Peter Urgoš (xurgos00)
 -- 11/2021
 
+
+-- TODO: list of messages (server response)
+-- TODO: whole server response actually needs more work (split information into smaller pieces)
+-- TODO: cleanup code (remove ProtoFields?)
+
+
 isa_proto = Proto("ISA", "ISA Protocol")
 
 msg_len = ProtoField.int32("isa_proto.msg_len", "Message Length", base.DEC)
@@ -60,7 +66,6 @@ function isa_proto.dissector(buffer, pinfo, tree)
 		while arg_offset < (buffer_len - 1) do
 			local a = substring_up_to(buffer(arg_offset, buffer_len - arg_offset - 1):string(), " ")
 			if a == nil or a == "" then break end
-			--print(command_args_count .. " : " .. a)
 			
 			command_args[command_args_count] = a
 			command_args_count = command_args_count + 1
@@ -84,7 +89,7 @@ function isa_proto.dissector(buffer, pinfo, tree)
 			if command_args_count ~= 1 then return end
 
 			local names = { [0] = "Token" }
-			add_args_to_tree(tree, buffer, arg_offset, command_args, names, command_args_count)
+			add_args_to_tree(args_tree, buffer, arg_offset, command_args, names, command_args_count)
 		
 		elseif command == "fetch" then
 			if command_args_count ~= 2 then return end
