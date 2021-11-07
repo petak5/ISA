@@ -11,4 +11,7 @@ void saveToken(std::string t);
 std::string loadToken();
 void deleteToken();
 
+std::string escapeString(std::string s);
+std::string unescapeString(std::string s);
+
 #endif  // __TOOLS_H__

@@ -4,6 +4,7 @@
 
 #include <iostream>
 #include "params.h"
+#include "tools.h"
 
 enum class State
 {
@@ -17,6 +18,11 @@ Params::Params(int argc, char *argv[])
     parse(argc, argv);
 
     command_str = command_to_string(command);
+
+    for (size_t i = 0; i < this->args.size(); i++)
+    {
+        this->args[i] = escapeString(this->args[i]);
+    }
 }
 
 void Params::parse(int argc, char *argv[])

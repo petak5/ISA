@@ -15,11 +15,12 @@ public:
     bool success = false;
     std::string message = "";
 
-    Response(Command command, std::string message);
+    Response(Command command, std::string msg);
 
 private:
     void parse(Command command, std::string msg);
     size_t getNextQuotePosition(std::string msg);
+    size_t getNextClosingParenthesePosition(std::string msg);
 };
 
 #endif  // __RESPONSE_H__

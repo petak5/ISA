@@ -3,12 +3,15 @@
 // 11/2021
 
 #include <iostream>
+#include <algorithm>
 #include "response.h"
 #include "tools.h"
 
-Response::Response(Command command, std::string message)
+Response::Response(Command command, std::string msg)
 {
-    parse(command, message);
+    parse(command, msg);
+
+    message = unescapeString(message);
 }
 
 void Response::parse(Command command, std::string msg)
@@ -40,7 +43,6 @@ void Response::parse(Command command, std::string msg)
     {
         auto pos = msg.rfind('"', msg.length() - 2);
         auto token = msg.substr(pos + 1, msg.length() - pos - 2);
-        std::cout << "Token: " + token + '\n';
 
         message = msg.substr(1, pos - 3) + '\n';
 
@@ -48,6 +50,33 @@ void Response::parse(Command command, std::string msg)
     }
     else if (command == Command::List)
     {
+        message += '\n';
+
+        // Remove outer parentheses
+        msg = msg.substr(1, msg.length() - 2);
+        size_t pos;
+
+        while ((pos = getNextClosingParenthesePosition(msg)) != (size_t)-1)
+        {
+            // A single message entry
+            auto item = msg.substr(1, pos - 1);
+
+            auto temp_pos = item.find_first_of(' ');
+            auto number = item.substr(0, temp_pos);
+
+            item = item.substr(temp_pos + 1);
+
+            temp_pos = getNextQuotePosition(item);
+            auto sender = item.substr(1, temp_pos - 1);
+
+            item = item.substr(temp_pos + 2);
+
+            auto subject = item.substr(1, item.length() - 2);
+
+            message += number + ":\n  From: " + sender + "\n  Subject: " + subject + '\n';
+
+            msg = msg.substr(std::min(pos + 2, msg.length()));
+        }
     }
     else if (command == Command::Fetch)
     {
@@ -75,9 +104,22 @@ void Response::parse(Command command, std::string msg)
 
 size_t Response::getNextQuotePosition(std::string msg)
 {
+    // Skips first character
     for (size_t i = 1; i < msg.length(); i++)
     {
         if (msg[i] == '"' && msg[i - 1] != '\\')
+            return i;
+    }
+
+    return -1;
+}
+
+size_t Response::getNextClosingParenthesePosition(std::string msg)
+{
+    // Skips first character
+    for (size_t i = 1; i < msg.length(); i++)
+    {
+        if (msg[i] == ')' && msg[i - 1] != '\\')
             return i;
     }
 

@@ -79,7 +79,7 @@ int main(int argc, char *argv[])
     }
 
     inet_ntop(p->ai_family, get_in_addr((struct sockaddr *)p->ai_addr), s, sizeof(s));
-    printf("client: connecting to %s\n", s);
+    //printf("client: connecting to %s\n", s);
 
     freeaddrinfo(servinfo); // all done with this structure
 
@@ -89,9 +89,10 @@ int main(int argc, char *argv[])
     // Receive response
     auto msg = receiveMessage(sockfd);
 
-    std::cout << "client: received '" + msg + "'\n";
+    //std::cout << "client: received '" + msg + "'\n";
 
     auto response = Response(params.command, msg);
+
     // Print response
     printResponse(response);
 
@@ -221,5 +222,10 @@ std::string createMessage(Params params)
 
 void printResponse(Response response)
 {
-    std::cout << (response.success ? "SUCCESS: " : "ERROR: ") << response.message;
+    std::cout << (response.success ? "SUCCESS:" : "ERROR:");
+
+    if (!response.message.starts_with('\n'))
+        std::cout << " ";
+
+    std::cout << response.message;
 }
