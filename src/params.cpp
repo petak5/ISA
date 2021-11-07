@@ -35,6 +35,7 @@ void Params::parse(int argc, char *argv[])
     if (argc == 1)
     {
         std::cout << "client: expects <command> [<args>] ... on the command line, given 0 arguments\n";
+        exit(1);
     }
 
 	// Start from 1, 0-th parameter is program name

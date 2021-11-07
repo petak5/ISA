@@ -1,4 +1,4 @@
 *.o
-main
+client
 .vscode
 .DS_Store
