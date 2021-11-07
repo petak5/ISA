@@ -32,6 +32,11 @@ void Params::parse(int argc, char *argv[])
     bool portSet = false;
     bool commandSet = false;
 
+    if (argc == 1)
+    {
+        std::cout << "client: expects <command> [<args>] ... on the command line, given 0 arguments\n";
+    }
+
 	// Start from 1, 0-th parameter is program name
 	for (int i = 1; i < argc; i++)
 	{
@@ -61,7 +66,9 @@ void Params::parse(int argc, char *argv[])
             {
                 if (!commandSet)
                 {
-                    if (argv[i] == std::string("register"))
+                    if (argv[i] == std::string("-h"))
+                        help();
+                    else if (argv[i] == std::string("register"))
                         command = Command::Register;
                     else if (argv[i] == std::string("login"))
                         command = Command::Login;
@@ -145,4 +152,30 @@ std::string Params::command_to_string(Command command)
     }
 
     return result;
+}
+
+void Params::help()
+{
+    std::cout << std::string("") +
+        "usage: client [ <option> ... ] <command> [<args>] ...\n\n" +
+        "<option> is one of\n\n" +
+        "  -a <addr>, --address <addr>\n" +
+        "     Server hostname or address to connect to\n" +
+        "  -p <port>, --port <port>\n" +
+        "     Server port to connect to\n" +
+        "  --help, -h\n" +
+        "     Show this help\n" +
+        "  --\n" +
+        "     Do not treat any remaining argument as a switch (at this level)\n\n" +
+        " Multiple single-letter switches can be combined after\n" +
+        " one `-`. For example, `-h-` is the same as `-h --`.\n" +
+        " Supported commands:\n" +
+        "   register <username> <password>\n" +
+        "   login <username> <password>\n" +
+        "   list\n" +
+        "   send <recipient> <subject> <body>\n" +
+        "   fetch <id>\n" +
+        "   logout\n";
+
+    exit(0);
 }

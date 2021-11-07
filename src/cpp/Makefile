@@ -10,7 +10,7 @@ MODULES=main.o params.o response.o tools.o base64.o
 all: main
 
 main: $(MODULES)
-	$(CC) $(CFLAGS) $^ -o $@
+	$(CC) $(CFLAGS) $^ -o client
 
 %.o: %.cpp
 	$(CC) $(CFLAGS) -c $< -o $@
@@ -20,4 +20,4 @@ run: main
 
 .PHONY: clean
 clean:
-	rm -rf xurgos00.zip *.o main
+	rm -rf xurgos00.zip *.o client

@@ -34,6 +34,7 @@ public:
 private:
     void parse(int argc, char *argv[]);
     std::string command_to_string(Command command);
+    void help();
 };
 
 #endif  // __PARAMS_H__

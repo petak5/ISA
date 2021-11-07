@@ -135,7 +135,7 @@ std::string createMessage(Params params)
         case Command::Register:
             if (params.args.size() != 2)
             {
-                std::cerr << "ERROR: Invalid arguments count for command register.";
+                std::cerr << "register <username> <password>\n";
                 exit(1);
             }
 
@@ -145,7 +145,7 @@ std::string createMessage(Params params)
         case Command::Login:
             if (params.args.size() != 2)
             {
-                std::cerr << "ERROR: Invalid arguments count for command login.";
+                std::cerr << "login <username> <password>\n";
                 exit(1);
             }
 
@@ -155,7 +155,7 @@ std::string createMessage(Params params)
         case Command::Logout:
             if (params.args.size() != 0)
             {
-                std::cerr << "ERROR: Invalid arguments count for command logout.";
+                std::cerr << "logout\n";
                 exit(1);
             }
 
@@ -171,7 +171,7 @@ std::string createMessage(Params params)
         case Command::List:
             if (params.args.size() != 0)
             {
-                std::cerr << "ERROR: Invalid arguments count for command list.";
+                std::cerr << "list\n";
                 exit(1);
             }
 
@@ -187,7 +187,7 @@ std::string createMessage(Params params)
         case Command::Fetch:
             if (params.args.size() != 1)
             {
-                std::cerr << "ERROR: Invalid arguments count for command fetch.";
+                std::cerr << "fetch <id>\n";
                 exit(1);
             }
 
@@ -203,7 +203,7 @@ std::string createMessage(Params params)
         case Command::Send:
             if (params.args.size() != 3)
             {
-                std::cerr << "ERROR: Invalid arguments count for command send.";
+                std::cerr << "send <recipient> <subject> <body>\n";
                 exit(1);
             }
 
