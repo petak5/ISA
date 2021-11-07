@@ -16,7 +16,7 @@ main: $(MODULES)
 	$(CC) $(CFLAGS) -c $< -o $@
 
 run: main
-	./main
+	./client
 
 .PHONY: clean
 clean:
