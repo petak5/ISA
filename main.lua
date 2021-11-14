@@ -3,21 +3,10 @@
 -- 11/2021
 
 
--- TODO: list of messages (server response)
--- TODO: whole server response actually needs more work (split information into smaller pieces)
 -- TODO: cleanup code (remove ProtoFields?)
 
 
 isa_proto = Proto("ISA", "ISA Protocol")
-
-msg_len = ProtoField.int32("isa_proto.msg_len", "Message Length", base.DEC)
-msg_type = ProtoField.string("isa_proto.msg_type", "Message Type")
-response_status = ProtoField.string("isa_proto.response_status", "Response Status")
-msg_body = ProtoField.string("isa_proto.msg_body", "Message Body")
-cmd_type = ProtoField.string("isa_proto.cmd_type", "Command Type")
-cmd_args_count = ProtoField.int32("isa_proto.cmd_args_count", "Arguments Count", base.DEC)
-
-isa_proto.fields = { msg_len, msg_type, response_status, msg_body, cmd_type, cmd_args_count }
 
 function isa_proto.dissector(buffer, pinfo, tree)
 	local buffer_len = buffer:len()
@@ -30,33 +19,96 @@ function isa_proto.dissector(buffer, pinfo, tree)
 	-- Add root node of this protocol to the tree
 	local subtree = tree:add(isa_proto, buffer(), "ISA Protocol Data")
 
-	subtree:add(msg_len, buffer_len)
+	subtree:add(buffer(), "Message Length: " .. buffer_len)
+	subtree:add(buffer(), "Message Raw: " .. buffer():string())
 
-	-- Server response
+	-- --------------- --
+	-- Server response --
+	-- --------------- --
 	if (pinfo.src_port == 32323) then
-		subtree:add(msg_type, "Response")
+		subtree:add("Sender: Server")
 
+		-- -- --
+		-- OK --
+		-- -- --
 		if buffer(1, 2):string() == "ok" then
-			subtree:add(response_status, buffer(1, 2), "Ok")
-			subtree:add(msg_body, buffer(4, buffer_len - 2 - 3))
+			subtree:add(buffer(1, 2), "Response Status: Ok")
+
+			-- List command response
+			if buffer(buffer_len - 3, 2):string() == "))" or buffer(buffer_len - 3, 2):string() == "()" then
+				msgs_subtree = subtree:add(buffer(4, buffer_len - 5), "Dummy text")
+
+				local msg_count = 0
+				local msgs = {}
+
+				local temp_start = 5
+
+				while buffer(temp_start, 1):string() == "(" do
+					msg_subtree = msgs_subtree:add(msg_count)
+
+					local temp_len = firstIndexOf(buffer(temp_start + 1):string(), " ") - 1
+					local msg_id = buffer(temp_start + 1, temp_len):string()
+					msg_subtree:add(buffer(temp_start + 1, temp_len), "Id: " .. buffer(temp_start + 1, temp_len):string())
+
+					temp_start = temp_start + temp_len + 2
+					temp_len = getSecondQuotePosition(buffer(temp_start):string())
+					local msg_sender = buffer(temp_start + 1, temp_len - 2):string()
+					msg_subtree:add(buffer(temp_start, temp_len), "Sender: " .. buffer(temp_start + 1, temp_len - 2):string())
+
+					temp_start = temp_start + temp_len + 1
+					temp_len = getSecondQuotePosition(buffer(temp_start):string())
+					local msg_subject = buffer(temp_start + 1, temp_len - 2):string()
+					msg_subtree:add(buffer(temp_start, temp_len), "Subject: " .. buffer(temp_start + 1, temp_len - 2):string())
+
+					msg_count = msg_count + 1
+					msgs[msg_count] = { msg_id, msg_sender, msg_subject }
+
+					temp_start = temp_start + temp_len + 1
+				end
+
+				msgs_subtree:set_text("Message(s): " .. msg_count)
+
+				-- Fetch command response
+			elseif buffer(buffer_len - 2, 1):string() == ")" then
+				message_subtree = subtree:add(buffer(4, buffer_len - 5), "Message")
+
+				local temp_start = 5
+				local temp_len = getSecondQuotePosition(buffer(temp_start):string())
+				message_subtree:add(buffer(temp_start, temp_len), "Sender: " .. buffer(temp_start + 1, temp_len - 2):string())
+
+				temp_start = temp_start + temp_len + 1
+				temp_len = getSecondQuotePosition(buffer(temp_start):string())
+				message_subtree:add(buffer(temp_start, temp_len), "Subject: " .. buffer(temp_start + 1, temp_len - 2):string())
+
+				temp_start = temp_start + temp_len + 1
+				temp_len = getSecondQuotePosition(buffer(temp_start):string())
+				message_subtree:add(buffer(temp_start, temp_len), "Body: " .. buffer(temp_start + 1, temp_len - 2):string())
+			else
+				subtree:add(buffer(4, buffer_len - 5), "Message Body: " .. buffer(4, buffer_len - 5):string())
+			end
+
+		-- --- --
+		-- ERR --
+		-- --- --
 		elseif buffer(1, 3):string() == "err" then
-			subtree:add(response_status, buffer(1, 3), "Error")
-			subtree:add(msg_body, buffer(5, buffer_len - 2 - 4))
+			subtree:add(buffer(1, 3), "Response Status: Error")
+			subtree:add(buffer(5, buffer_len - 6), "Message Body: " .. buffer(5, buffer_len - 6):string())
 		else
 			return 0
 		end
-	
-	-- Client request
+
+	-- -------------- --
+	-- Client request --
+	-- -------------- --
 	else
-		subtree:add(msg_type, "Request")
+		subtree:add("Sender: Client")
 
 		local command = substring_up_to(buffer(1, buffer_len - 2):string(), " ")
 		local command_len = command:len()
 
 		-- Capitalize first character
 		local command_name = command:sub(1,1):upper()..command:sub(2)
-		subtree:add(cmd_type, buffer(1, command_len), command_name)
-		args_tree = subtree:add(buffer(command_len + 2, buffer_len - command_len - 3), "Command Argument(s)")
+		subtree:add(buffer(1, command_len), "Command Type: " .. command_name)
 
 		-- Parse arguments to a table
 		command_args = {}
@@ -66,15 +118,14 @@ function isa_proto.dissector(buffer, pinfo, tree)
 		while arg_offset < (buffer_len - 1) do
 			local a = substring_up_to(buffer(arg_offset, buffer_len - arg_offset - 1):string(), " ")
 			if a == nil or a == "" then break end
-			
+
 			command_args[command_args_count] = a
 			command_args_count = command_args_count + 1
 
 			arg_offset = arg_offset + a:len() + 1  -- +1 for empty space
 		end
 
-		-- Arguments count
-		args_tree:add(cmd_args_count, command_args_count)
+		args_tree = subtree:add(buffer(command_len + 2, buffer_len - command_len - 3), "Command Argument(s): " .. command_args_count)
 
 		local arg_offset = command_len + 2
 
@@ -84,19 +135,19 @@ function isa_proto.dissector(buffer, pinfo, tree)
 
 			local names = { [0] = "Username", "Password" }
 			add_args_to_tree(args_tree, buffer, arg_offset, command_args, names, command_args_count)
-		
+
 		elseif command == "logout" or command == "list" then
 			if command_args_count ~= 1 then return end
 
 			local names = { [0] = "Token" }
 			add_args_to_tree(args_tree, buffer, arg_offset, command_args, names, command_args_count)
-		
+
 		elseif command == "fetch" then
 			if command_args_count ~= 2 then return end
 
 			local names = { [0] = "Token", "Message Id" }
 			add_args_to_tree(args_tree, buffer, arg_offset, command_args, names, command_args_count)
-		
+
 		elseif command == "send" then
 			if command_args_count ~= 4 then return end
 
@@ -127,7 +178,7 @@ function substring_up_to(str, char)
 	if char == nil or char:len() ~= 1 then
 		return nil
 	end
-	
+
 	result = ""
 
 	for i = 1, #str do
@@ -140,4 +191,51 @@ function substring_up_to(str, char)
 	end
 
 	return result
+end
+
+-- Returns first index of character c in string str or -1 if not found
+function firstIndexOf(str, c)
+	for i = 1, #str do
+		if str:sub(i, i) == c then
+			return i
+		end
+	end
+
+	return -1
+end
+
+-- Returns position of second quote (`"`) in the string or -1 if not found
+-- Escaped quotes (`\"`) are skipped
+function getSecondQuotePosition(str)
+	local foundFirst = false
+
+	-- Escaping next character?
+	-- Set to true when previous character was unpaired backslash (`\`)
+	local escaping = false
+	-- Set to true when current character was escaped
+	local escaped = false
+
+	for i = 1, #str do
+		-- Reset escaping flags if needed
+		if escaping and escaped then
+			escaping = false
+			escaped = false
+		end
+
+		if str:sub(i, i) == '\\' and not escaping then
+			escaping = true
+		elseif str:sub(i, i) == '"' and not escaping then
+			if foundFirst then
+				return i
+			else
+				foundFirst = true
+			end
+		else
+			if escaping then
+				escaped = true
+			end
+		end
+	end
+
+	return -1
 end
