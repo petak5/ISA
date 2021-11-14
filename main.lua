@@ -2,8 +2,11 @@
 -- Peter Urgoš (xurgos00)
 -- 11/2021
 
-
--- TODO: cleanup code (remove ProtoFields?)
+-- Used Resources:
+	-- https://gitlab.com/wireshark/wireshark/-/wikis/Lua/Dissectors
+	-- https://mika-s.github.io/wireshark/lua/dissector/2017/11/04/creating-a-wireshark-dissector-in-lua-1.html
+	-- https://www.wireshark.org/docs/wsdg_html_chunked/wslua_dissector_example.html
+	-- https://www.wireshark.org/docs/wsdg_html_chunked/wsluarm_modules.html
 
 
 isa_proto = Proto("ISA", "ISA Protocol")
@@ -39,29 +42,27 @@ function isa_proto.dissector(buffer, pinfo, tree)
 				msgs_subtree = subtree:add(buffer(4, buffer_len - 5), "Dummy text")
 
 				local msg_count = 0
-				local msgs = {}
 
 				local temp_start = 5
 
 				while buffer(temp_start, 1):string() == "(" do
 					msg_subtree = msgs_subtree:add(msg_count)
 
+					-- ID
 					local temp_len = firstIndexOf(buffer(temp_start + 1):string(), " ") - 1
-					local msg_id = buffer(temp_start + 1, temp_len):string()
 					msg_subtree:add(buffer(temp_start + 1, temp_len), "Id: " .. buffer(temp_start + 1, temp_len):string())
 
+					-- Sender
 					temp_start = temp_start + temp_len + 2
 					temp_len = getSecondQuotePosition(buffer(temp_start):string())
-					local msg_sender = buffer(temp_start + 1, temp_len - 2):string()
 					msg_subtree:add(buffer(temp_start, temp_len), "Sender: " .. buffer(temp_start + 1, temp_len - 2):string())
 
+					-- Subject
 					temp_start = temp_start + temp_len + 1
 					temp_len = getSecondQuotePosition(buffer(temp_start):string())
-					local msg_subject = buffer(temp_start + 1, temp_len - 2):string()
 					msg_subtree:add(buffer(temp_start, temp_len), "Subject: " .. buffer(temp_start + 1, temp_len - 2):string())
 
 					msg_count = msg_count + 1
-					msgs[msg_count] = { msg_id, msg_sender, msg_subject }
 
 					temp_start = temp_start + temp_len + 1
 				end
@@ -73,13 +74,17 @@ function isa_proto.dissector(buffer, pinfo, tree)
 				message_subtree = subtree:add(buffer(4, buffer_len - 5), "Message")
 
 				local temp_start = 5
+
+				-- Sender
 				local temp_len = getSecondQuotePosition(buffer(temp_start):string())
 				message_subtree:add(buffer(temp_start, temp_len), "Sender: " .. buffer(temp_start + 1, temp_len - 2):string())
 
+				-- Subject
 				temp_start = temp_start + temp_len + 1
 				temp_len = getSecondQuotePosition(buffer(temp_start):string())
 				message_subtree:add(buffer(temp_start, temp_len), "Subject: " .. buffer(temp_start + 1, temp_len - 2):string())
 
+				-- Body
 				temp_start = temp_start + temp_len + 1
 				temp_len = getSecondQuotePosition(buffer(temp_start):string())
 				message_subtree:add(buffer(temp_start, temp_len), "Body: " .. buffer(temp_start + 1, temp_len - 2):string())
@@ -115,7 +120,7 @@ function isa_proto.dissector(buffer, pinfo, tree)
 		local command_len = command:len()
 
 		-- Capitalize first character
-		local command_name = command:sub(1,1):upper()..command:sub(2)
+		local command_name = command:sub(1,1):upper() .. command:sub(2)
 		subtree:add(buffer(1, command_len), "Command Type: " .. command_name)
 
 		-- Parse arguments to a table
