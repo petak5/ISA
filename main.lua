@@ -11,6 +11,7 @@
 
 isa_proto = Proto("ISA", "ISA Protocol")
 
+
 function isa_proto.dissector(buffer, pinfo, tree)
 	local buffer_len = buffer:len()
 
@@ -175,7 +176,6 @@ end
 local tcp_port = DissectorTable.get("tcp.port")
 tcp_port:add("32323", isa_proto)
 
-print("ISA dissector loaded\n")
 
 -- Warning: All tables must be indexable from 0.
 function add_args_to_tree(tree, buffer, arg_offset, args, names, count)
@@ -184,6 +184,7 @@ function add_args_to_tree(tree, buffer, arg_offset, args, names, count)
 		arg_offset = arg_offset + args[i]:len() + 1  -- +1 for empty space
 	end
 end
+
 
 -- Returns substring up to char position (excluding it)
 function substring_up_to(str, char)
@@ -206,6 +207,7 @@ function substring_up_to(str, char)
 	return result
 end
 
+
 -- Returns first index of character c in string str or -1 if not found
 function firstIndexOf(str, c)
 	for i = 1, #str do
@@ -216,6 +218,7 @@ function firstIndexOf(str, c)
 
 	return -1
 end
+
 
 -- Returns position of second quote (`"`) in the string or -1 if not found
 -- Escaped quotes (`\"`) are skipped
