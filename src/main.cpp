@@ -2,6 +2,11 @@
 // Peter Urgoš (xurgos00)
 // 11/2021
 
+/* Used Resources:
+ * TCP client skeleton: https://beej.us/guide/bgnet/html/#client-server-background
+ * Base64 implementation: https://renenyffenegger.ch/notes/development/Base64/Encoding-and-decoding-base-64-with-cpp/
+ */
+
 #include <iostream>
 #include <string>
 
@@ -188,6 +193,20 @@ std::string createMessage(Params params)
             if (params.args.size() != 1)
             {
                 std::cerr << "fetch <id>\n";
+                exit(1);
+            }
+
+            try
+            {
+                if (std::to_string(std::stoi(params.args[0])) != params.args[0])
+                {
+                    std::cerr << "ERROR: id " + params.args[0] + " is not a number\n";
+                    exit(1);
+                }
+            }
+            catch (std::invalid_argument const&)
+            {
+                std::cerr << "ERROR: id " + params.args[0] + " is not a number\n";
                 exit(1);
             }
 
