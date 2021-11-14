@@ -65,7 +65,7 @@ function isa_proto.dissector(buffer, pinfo, tree)
 
 					msg_count = msg_count + 1
 
-					temp_start = temp_start + temp_len + 1
+					temp_start = temp_start + temp_len + 2
 				end
 
 				msgs_subtree:set_text("Message(s): " .. msg_count)
