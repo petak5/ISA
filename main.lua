@@ -68,7 +68,7 @@ function isa_proto.dissector(buffer, pinfo, tree)
 
 				msgs_subtree:set_text("Message(s): " .. msg_count)
 
-				-- Fetch command response
+			-- Fetch command response
 			elseif buffer(buffer_len - 2, 1):string() == ")" then
 				message_subtree = subtree:add(buffer(4, buffer_len - 5), "Message")
 
@@ -83,6 +83,14 @@ function isa_proto.dissector(buffer, pinfo, tree)
 				temp_start = temp_start + temp_len + 1
 				temp_len = getSecondQuotePosition(buffer(temp_start):string())
 				message_subtree:add(buffer(temp_start, temp_len), "Body: " .. buffer(temp_start + 1, temp_len - 2):string())
+
+			-- Register command response
+			elseif buffer(5, 1):string() == "r" then
+				subtree:add(buffer(21, buffer_len - 21 - 2), "Registered User: " .. buffer(21, buffer_len - 21 - 2):string())
+
+			-- Login command response
+			elseif buffer(5, 1):string() == "u" then
+				subtree:add(buffer(21, buffer_len - 21 - 1), "Token: " .. buffer(22, buffer_len - 22 - 2):string())
 			else
 				subtree:add(buffer(4, buffer_len - 5), "Message Body: " .. buffer(4, buffer_len - 5):string())
 			end
