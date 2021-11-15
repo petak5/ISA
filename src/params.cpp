@@ -43,7 +43,7 @@ void Params::parse(int argc, char *argv[])
 	{
 		if (state == State::Start)
 		{
-    		if (argv[i] == std::string("-a"))
+    		if ( (argv[i] == std::string("-a")) || (argv[i] == std::string("--address")) )
     		{
                 if (addressSet)
                 {
@@ -53,7 +53,7 @@ void Params::parse(int argc, char *argv[])
 
                 state = State::Address;
 	    	}
-			else if (argv[i] == std::string("-p"))
+			else if ( (argv[i] == std::string("-p")) || (argv[i] == std::string("--port")) )
 			{
                 if (portSet)
                 {

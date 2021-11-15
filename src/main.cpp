@@ -24,7 +24,7 @@
 
 #define BUFF_SIZE 1024
 
-// get sockaddr, IPv4 or IPv6:
+// Get sockaddr, IPv4 or IPv6:
 void *get_in_addr(struct sockaddr *sa)
 {
     if (sa->sa_family == AF_INET) {
@@ -36,72 +36,64 @@ void *get_in_addr(struct sockaddr *sa)
 
 int main(int argc, char *argv[])
 {
-    auto params = Params(argc, argv);
-
-    /*
-    std::cout << "Address: " << params.address << '\n';
-    std::cout << "Port: " << params.port << '\n';
-    std::cout << "Command: " << params.command_str << '\n';
-    if (params.args.size()) std::cout << "Args: \n";
-    for (auto a : params.args)
-        std::cout << "    " << a << '\n';
-    */
-
-    int sockfd;
+    int sock;
     struct addrinfo hints, *servinfo, *p;
     int rv;
     char s[INET6_ADDRSTRLEN];
+
+    auto params = Params(argc, argv);
 
     memset(&hints, 0, sizeof(hints));
     hints.ai_family = AF_UNSPEC;
     hints.ai_socktype = SOCK_STREAM;
 
-    if ((rv = getaddrinfo(params.address.c_str(), params.port.c_str(), &hints, &servinfo)) != 0) {
-        std::cerr << "getaddrinfo: " + std::string(gai_strerror(rv)) + '\n';
+    if ((rv = getaddrinfo(params.address.c_str(), params.port.c_str(), &hints, &servinfo)) != 0)
+    {
+        std::cerr << "ERROR: getaddrinfo: " + std::string(gai_strerror(rv)) + '\n';
         return 1;
     }
 
-    // loop through all the results and connect to the first we can
-    for (p = servinfo; p != NULL; p = p->ai_next) {
-        if ((sockfd = socket(p->ai_family, p->ai_socktype,
-                p->ai_protocol)) == -1) {
-            perror("client: socket");
+    // Loop through all the results and connect to the first we can
+    for (p = servinfo; p != NULL; p = p->ai_next)
+    {
+        if ((sock = socket(p->ai_family, p->ai_socktype, p->ai_protocol)) == -1)
+        {
+            perror("ERROR: client: socket");
             continue;
         }
 
-        if (connect(sockfd, p->ai_addr, p->ai_addrlen) == -1) {
-            close(sockfd);
-            perror("client: connect");
+        if (connect(sock, p->ai_addr, p->ai_addrlen) == -1)
+        {
+            close(sock);
+            perror("ERROR: client: connect");
             continue;
         }
 
         break;
     }
 
-    if (p == NULL) {
-        std::cerr << "client: failed to connect\n";
+    if (p == NULL)
+    {
+        std::cerr << "ERROR: failed to connect\n";
         return 1;
     }
 
     inet_ntop(p->ai_family, get_in_addr((struct sockaddr *)p->ai_addr), s, sizeof(s));
-    //printf("client: connecting to %s\n", s);
 
-    freeaddrinfo(servinfo); // all done with this structure
+    freeaddrinfo(servinfo);
 
     // Send message
-    sendMessage(sockfd, createMessage(params));
+    sendMessage(sock, createMessage(params));
 
     // Receive response
-    auto msg = receiveMessage(sockfd);
-
-    //std::cout << "client: received '" + msg + "'\n";
+    auto msg = receiveMessage(sock);
 
     auto response = Response(params.command, msg);
 
     // Print response
     printResponse(response);
 
-    close(sockfd);
+    close(sock);
 
     return 0;
 }
@@ -109,7 +101,7 @@ int main(int argc, char *argv[])
 void sendMessage(int socket, std::string message)
 {
     if (send(socket, message.c_str(), message.length(), 0) == -1) {
-        perror("ERROR: failed to send message.");
+        perror("ERROR: failed to send message");
         exit(1);
     }
 }
